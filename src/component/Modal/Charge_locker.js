@@ -31,16 +31,14 @@ export default class Charge_locker extends Component {
     constructor(props) {
         super(props)
         this.state = {
+            endpoint: "http://localhost:3013",
             number_locker: '',
             size: '',
-            duration_hr: '',
-            duration_min: '',
-            coin: '',
+            duration: "",
+            coin: "",
             cal_coin: 0,
-            coin_min: 0,
-            coin_hr: 0,
-            check_hr_min: '',
-            got_item: ''
+            check_duration: '',
+            got_item: '',
         }
     }
 
@@ -63,125 +61,343 @@ export default class Charge_locker extends Component {
         }
     }
     calculate_coin() {
-        const duration_hr = parseInt(this.state.duration_hr)
-        const duration_min = parseInt(this.state.duration_min)
+        const duration = parseInt(this.state.duration)
         const coin = parseInt(this.state.coin)
         const locker = parseInt(this.state.number_locker)
-        let { cal_coin, coin_min, coin_hr } = this.state
-
+        let { cal_coin } = this.state
+        let mod_duration = 0
+        let divide_duration = 0
         if ((locker == 1) || (locker == 4) || (locker == 7) || (locker == 10)) {
-            if (duration_hr <= 0) {
-                coin_hr = 0
-                this.setState({ coin_hr })
-                if ((duration_min <= 0)) {
-                    coin_min = 0
-                    this.setState({ coin_min })
-                    setTimeout(() => {
-                        cal_coin = (parseInt(this.state.coin_hr) + parseInt(this.state.coin_min))
-                        this.setState({ cal_coin, check_hr_min: '' })
+            if (duration <= 0) {
+                cal_coin = 0
+                this.setState({
+                    cal_coin, check_duration: 'Please insert duration again !'
+                })
+            }
+            else if (duration > 0) {
+                divide_duration = (duration / 60 | 0)
+                mod_duration = (duration % 60)
+                if (divide_duration == 1) {
+                    if (mod_duration <= 0) {
+                        cal_coin = divide_duration * 50
+                        this.setState({ cal_coin })
                         if (cal_coin <= coin) {
-                            this.setState({ cal_coin, got_item: 'true' })
+                            this.setState({ cal_coin, got_item: 'true', check_duration: '' })
                         }
                         else {
-                            this.setState({ cal_coin, got_item: 'false' })
+                            this.setState({ cal_coin, got_item: 'false', check_duration: '' })
                         }
-                    }, 10);
-                }
-                else if ((duration_min >= 1) && (duration_min <= 59)) {
-                    coin_min = duration_min * 25
-                    this.setState({ coin_min })
-                    setTimeout(() => {
-                        cal_coin = (parseInt(this.state.coin_hr) + parseInt(this.state.coin_min))
-                        this.setState({ cal_coin, check_hr_min: '' })
+                        this.setState({ cal_coin })
+                    }
+                    else {
+                        cal_coin = (divide_duration * 50) + 25
+                        this.setState({ cal_coin })
                         if (cal_coin <= coin) {
-                            this.setState({ cal_coin, got_item: 'true' })
+                            this.setState({ cal_coin, got_item: 'true', check_duration: '' })
                         }
                         else {
-                            this.setState({ cal_coin, got_item: 'false' })
+                            this.setState({ cal_coin, got_item: 'false', check_duration: '' })
                         }
-                    }, 10);
+                    }
                 }
                 else {
-                    this.setState({ check_hr_min: 'please check your hours or mins !', cal_coin: '', got_item: '' })
+                    if (mod_duration <= 0) {
+                        cal_coin = 50
+                        cal_coin += (divide_duration - 1) * 25
+                        this.setState({ cal_coin })
+                        if (cal_coin <= coin) {
+                            this.setState({ cal_coin, got_item: 'true', check_duration: '' })
+                        }
+                        else {
+                            this.setState({ cal_coin, got_item: 'false', check_duration: '' })
+                        }
+                        this.setState({ cal_coin })
+                    }
+                    else {
+                        cal_coin = 50
+                        cal_coin += (divide_duration * 25)
+                        this.setState({ cal_coin })
+                        if (cal_coin <= coin) {
+                            this.setState({ cal_coin, got_item: 'true', check_duration: '' })
+                        }
+                        else {
+                            this.setState({ cal_coin, got_item: 'false', check_duration: '' })
+                        }
+                    }
                 }
             }
-            else if ((duration_hr >= 1) && (duration_hr <= 24)) {
-                coin_hr = (duration_hr * 50)
-                this.setState({ coin_hr })
-                if ((duration_min <= 0)) {
-                    coin_min = 0
-                    this.setState({ coin_min })
-                    setTimeout(() => {
-                        cal_coin = (parseInt(this.state.coin_hr) + parseInt(this.state.coin_min))
-                        this.setState({ cal_coin, check_hr_min: '' })
+
+        }
+        else if ((locker == 2) || (locker == 5) || (locker == 8) || (locker == 11)) {
+            if (duration <= 0) {
+                cal_coin = 0
+                this.setState({
+                    cal_coin, check_duration: 'Please insert duration again !'
+                })
+            }
+            else if (duration > 0) {
+                divide_duration = (duration / 60 | 0)
+                mod_duration = (duration % 60)
+                if (divide_duration == 1) {
+                    if (mod_duration <= 0) {
+                        cal_coin = divide_duration * 100
+                        this.setState({ cal_coin })
                         if (cal_coin <= coin) {
-                            this.setState({ cal_coin, got_item: 'true' })
+                            this.setState({ cal_coin, got_item: 'true', check_duration: '' })
                         }
                         else {
-                            this.setState({ cal_coin, got_item: 'false' })
+                            this.setState({ cal_coin, got_item: 'false', check_duration: '' })
                         }
-                    }, 10);
-
-                }
-                else if ((duration_min >= 1) && (duration_min <= 59)) {
-                    coin_min = duration_min * 25
-                    this.setState({ coin_min })
-                    setTimeout(() => {
-                        cal_coin = (parseInt(this.state.coin_hr) + parseInt(this.state.coin_min))
-                        this.setState({ cal_coin, check_hr_min: '' })
+                        this.setState({ cal_coin })
+                    }
+                    else {
+                        cal_coin = (divide_duration * 100) + 50
+                        this.setState({ cal_coin })
                         if (cal_coin <= coin) {
-                            this.setState({ cal_coin, got_item: 'true' })
+                            this.setState({ cal_coin, got_item: 'true', check_duration: '' })
                         }
                         else {
-                            this.setState({ cal_coin, got_item: 'false' })
+                            this.setState({ cal_coin, got_item: 'false', check_duration: '' })
                         }
-                    }, 10);
-
+                    }
                 }
                 else {
-                    this.setState({ check_hr_min: 'please check your hours or mins !', cal_coin: '', got_item: '' })
+                    if (mod_duration <= 0) {
+                        cal_coin = 100
+                        cal_coin += (divide_duration - 1) * 50
+                        this.setState({ cal_coin })
+                        if (cal_coin <= coin) {
+                            this.setState({ cal_coin, got_item: 'true', check_duration: '' })
+                        }
+                        else {
+                            this.setState({ cal_coin, got_item: 'false', check_duration: '' })
+                        }
+                        this.setState({ cal_coin })
+                    }
+                    else {
+                        cal_coin = 100
+                        cal_coin += (divide_duration * 50)
+                        this.setState({ cal_coin })
+                        if (cal_coin <= coin) {
+                            this.setState({ cal_coin, got_item: 'true', check_duration: '' })
+                        }
+                        else {
+                            this.setState({ cal_coin, got_item: 'false', check_duration: '' })
+                        }
+                    }
                 }
-            }
-            else {
-                this.setState({ check_hr_min: 'please check your hours or mins !', cal_coin: '', got_item: '' })
             }
         }
-        // else if ((locker == 2) || (locker == 5) || (locker == 8) || (locker == 11)) {
-        //     if ((duration >= 0) && (duration <= 60)) {
-        //     }
-        // }
-        // else if ((locker == 3) || (locker == 6) || (locker == 9) || (locker == 12)) {
-        //     if ((duration >= 0) && (duration <= 60)) {
-        //     }
+        else if ((locker == 3) || (locker == 6) || (locker == 9) || (locker == 12)) {
+            if (duration <= 0) {
+                cal_coin = 0
+                this.setState({
+                    cal_coin, check_duration: 'Please insert duration again !'
+                })
+            }
+            else if (duration > 0) {
+                divide_duration = (duration / 60 | 0)
+                mod_duration = (duration % 60)
+                if (divide_duration == 1) {
+                    if (mod_duration <= 0) {
+                        cal_coin = divide_duration * 200
+                        this.setState({ cal_coin })
+                        if (cal_coin <= coin) {
+                            this.setState({ cal_coin, got_item: 'true', check_duration: '' })
+                        }
+                        else {
+                            this.setState({ cal_coin, got_item: 'false', check_duration: '' })
+                        }
+                        this.setState({ cal_coin })
+                    }
+                    else {
+                        cal_coin = (divide_duration * 200) + 100
+                        this.setState({ cal_coin })
+                        if (cal_coin <= coin) {
+                            this.setState({ cal_coin, got_item: 'true', check_duration: '' })
+                        }
+                        else {
+                            this.setState({ cal_coin, got_item: 'false', check_duration: '' })
+                        }
+                    }
+                }
+                else {
+                    if (mod_duration <= 0) {
+                        cal_coin = 200
+                        cal_coin += ((divide_duration - 1) * 100)
+                        this.setState({ cal_coin })
+                        if (cal_coin <= coin) {
+                            this.setState({ cal_coin, got_item: 'true', check_duration: '' })
+                        }
+                        else {
+                            this.setState({ cal_coin, got_item: 'false', check_duration: '' })
+                        }
+                        this.setState({ cal_coin })
+                    }
+                    else {
+                        cal_coin = 200
+                        cal_coin += ((divide_duration) * 100)
+                        this.setState({ cal_coin })
+                        if (cal_coin <= coin) {
+                            this.setState({ cal_coin, got_item: 'true', check_duration: '' })
+                        }
+                        else {
+                            this.setState({ cal_coin, got_item: 'false', check_duration: '' })
+                        }
+                    }
+                }
+            }
+        }
 
-        // }
         setTimeout(() => {
+            this.cal_bill_coin()
             this.push_data()
         }, 100);
+    }
+    cal_bill_coin() {
+        const got_item = this.state.got_item
+        const cal_coin = this.state.cal_coin
+        const coin = parseInt(this.state.coin)
+        let coin_charge = 0
+        let bill_1000 = 0
+        let bill_500 = 0
+        let bill_100 = 0
+        let bill_50 = 0
+        let bill_20 = 0
+        let coin_10 = 0
+        let coin_5 = 0
+        let coin_2 = 0
+        let coin_1 = 0
+
+        if (got_item == "true") {
+            coin_charge = coin - cal_coin
+            this.setState({ coin_charge: coin_charge })
+            bill_1000 = (coin_charge / 1000)
+            this.setState({ bill_1000: bill_1000 | 0 })
+
+            bill_1000 = (coin_charge % 1000)
+            bill_500 = bill_1000 / 500
+            this.setState({ bill_500: bill_500 | 0 })
+
+            bill_500 = (bill_1000 % 500)
+            bill_100 = bill_500 / 100
+            this.setState({ bill_100: bill_100 | 0 })
+
+            bill_100 = (bill_500 % 100)
+            bill_50 = bill_100 / 50
+            this.setState({ bill_50: bill_50 | 0 })
+
+            bill_50 = (bill_100 % 50)
+            bill_20 = bill_50 / 20
+            this.setState({ bill_20: bill_20 | 0 })
+
+            bill_20 = (bill_50 % 20)
+            coin_10 = bill_20 / 10
+            this.setState({ coin_10: coin_10 | 0 })
+
+            coin_10 = (bill_20 % 10)
+            coin_5 = coin_10 / 5
+            this.setState({ coin_5: coin_5 | 0 })
+
+            coin_5 = (coin_10 % 5)
+            coin_2 = coin_5 / 2
+            this.setState({ coin_2: coin_2 | 0 })
+
+            coin_2 = (coin_5 % 2)
+            coin_1 = coin_2 / 1
+            this.setState({ coin_1: coin_1 | 0 })
+
+        }
+        else {
+            coin_charge = coin
+            this.setState({ coin_charge: coin_charge })
+            bill_1000 = (coin_charge / 1000)
+            this.setState({ bill_1000: bill_1000 | 0 })
+
+            bill_1000 = (coin_charge % 1000)
+            bill_500 = bill_1000 / 500
+            this.setState({ bill_500: bill_500 | 0 })
+
+            bill_500 = (bill_1000 % 500)
+            bill_100 = bill_500 / 100
+            this.setState({ bill_100: bill_100 | 0 })
+
+            bill_100 = (bill_500 % 100)
+            bill_50 = bill_100 / 50
+            this.setState({ bill_50: bill_50 | 0 })
+
+            bill_50 = (bill_100 % 50)
+            bill_20 = bill_50 / 20
+            this.setState({ bill_20: bill_20 | 0 })
+
+            bill_20 = (bill_50 % 20)
+            coin_10 = bill_20 / 10
+            this.setState({ coin_10: coin_10 | 0 })
+
+            coin_10 = (bill_20 % 10)
+            coin_5 = coin_10 / 5
+            this.setState({ coin_5: coin_5 | 0 })
+
+            coin_5 = (coin_10 % 5)
+            coin_2 = coin_5 / 2
+            this.setState({ coin_2: coin_2 | 0 })
+
+            coin_2 = (coin_5 % 2)
+            coin_1 = coin_2 / 1
+            this.setState({ coin_1: coin_1 | 0 })
+        }
+
     }
     push_data() {
         const data_locker = []
         data_locker.push({
             got_item: this.state.got_item,
             cal_coin: this.state.cal_coin,
+            number_locker: this.state.number_locker,
+            size: this.state.size,
+            coin_charge: this.state.coin_charge,
+            bill_1000: this.state.bill_1000,
+            bill_500: this.state.bill_500,
+            bill_100: this.state.bill_100,
+            bill_50: this.state.bill_50,
+            bill_20: this.state.bill_20,
+            coin_10: this.state.coin_10,
+            coin_5: this.state.coin_5,
+            coin_2: this.state.coin_2,
+            coin_1: this.state.coin_1,
+            // active: this.state.active,
+            duration: +this.state.duration,
+            coin: +this.state.coin
         })
-        this.setState({ data_locker }, () => { console.log("data", this.state.data_locker) })
-
-
+        this.props.get_data_modal(data_locker)
     }
     clear() {
         this.setState({
-            check_hr_min: '',
-            duration_hr: '',
-            duration_min: '',
+            check_duration: '',
+            duration: '',
             coin: '',
             cal_coin: 0,
-            coin_min: 0,
-            coin_hr: 0,
         })
     }
     render() {
-        const { size, coin, duration_hr, duration_min, cal_coin, got_item, check_hr_min } = this.state
+        const {
+            size,
+            coin,
+            duration,
+            cal_coin,
+            got_item,
+            check_duration,
+            coin_charge,
+            bill_1000,
+            bill_500,
+            bill_100,
+            bill_50,
+            bill_20,
+            coin_10,
+            coin_5,
+            coin_2,
+            coin_1
+        } = this.state
         const number_locker = parseInt(this.state.number_locker)
         return (
             <div className="margin-t">
@@ -197,30 +413,35 @@ export default class Charge_locker extends Component {
                 <div style={{ marginTop: 20, textAlign: 'center' }} >
                     you select locker &nbsp; <a style={{ color: 'blue' }}>{number_locker}</a> &nbsp; size &nbsp; <a style={{ color: 'blue' }}> {size} </a>
                 </div>
-                {cal_coin ?
+                {/* {cal_coin ?
                     <div style={{ marginTop: 20, textAlign: 'center' }} >
                         you charge coin : <a style={{ color: 'blue' }}>{cal_coin}</a> THB &nbsp; || &nbsp;
-                        Got item back : <a style={{ color: 'blue' }}>{got_item}</a>
-                    </div> : null}
-                {check_hr_min ?
+                        Got item back : <a style={{ color: 'blue' }}>{got_item}</a> <br />
+                        you charge coin : <a style={{ color: 'blue' }}>{coin_charge}</a> THB &nbsp; || &nbsp;
+                      <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
+                            {bill_1000 ? <div>bill 1000 x <a style={{ color: 'blue' }}>{bill_1000}</a>,&nbsp;</div> : null}
+                            {bill_500 ? <div>bill 500 x <a style={{ color: 'blue' }}>{bill_500}</a>,&nbsp;</div> : null}
+                            {bill_100 ? <div>bill 100 x <a style={{ color: 'blue' }}>{bill_100}</a>,&nbsp;</div> : null}
+                            {bill_50 ? <div>bill 50 x <a style={{ color: 'blue' }}>{bill_50}</a>,&nbsp;</div> : null}
+                            {bill_20 ? <div>bill 20 x <a style={{ color: 'blue' }}>{bill_20}</a>,&nbsp;</div> : null}
+                            {coin_10 ? <div>coin 10 x <a style={{ color: 'blue' }}>{coin_10}</a>,&nbsp;</div> : null}
+                            {coin_5 ? <div>coin 5 x <a style={{ color: 'blue' }}>{coin_5}</a>,&nbsp;</div> : null}
+                            {coin_2 ? <div>coin 2 x <a style={{ color: 'blue' }}>{coin_2}</a>&nbsp;</div> : null}
+                            {coin_1 ? <div>coin 1 x <a style={{ color: 'blue' }}>{coin_1}</a></div> : null}
+                        </div>
+                    </div>
+                    : null} */}
+                {check_duration ?
                     <div style={{ marginTop: 20, textAlign: 'center' }} >
-                        <a style={{ color: 'red' }}>{check_hr_min}</a>
+                        <a style={{ color: 'red' }}>{check_duration}</a>
                     </div> : null}
                 <Row style={{ marginTop: 20 }} form>
                     <Col sm={2} />
-                    <Col sm={2} >
-                        <Label >Hours</Label>
-                        <Input type="number" name="duration_hr" placeholder="insert 0-24"
-                            value={duration_hr}
-                            onChange={(e) => this.setState({ duration_hr: e.target.value })}
-                        />
-                        {/* <Input type="text" value={"you select locker " + number_locker + " " + size} /> */}
-                    </Col>
-                    <Col sm={2} >
-                        <Label for="exampleZip">Mins</Label>
-                        <Input type="number" name="duration_min" placeholder="insert 0-59"
-                            value={duration_min}
-                            onChange={(e) => this.setState({ duration_min: e.target.value })}
+                    <Col sm={4} >
+                        <Label >Duration of deposit</Label>
+                        <Input type="number" name="duration" placeholder="please insert duration"
+                            value={duration}
+                            onChange={(e) => this.setState({ duration: e.target.value })}
                         />
                     </Col>
                     <Col sm={4}>

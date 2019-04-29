@@ -30,8 +30,20 @@
     -webkit-border-radius:10px;
     border-radius:10px
 }
-/* table {
-  -moz-border-radius:10px;
-    -webkit-border-radius:10px;
-    border-radius:10px
-} */
+.btn-active{
+  width: 30px;
+  border-radius: 15px;
+  outline: none;
+  background-color: rgba(255, 99, 71, 0.5); 
+  color: white; 
+  border: 1px solid rgba(255, 99, 71, 0.5);
+ -webkit-transition-duration: 0.4s; /* Safari */
+  transition-duration: 0.4s;
+}
+.btn-active:hover {
+  background-color: rgba(255, 99, 71, 0.5);
+  color: white;
+}
+.btn-active:focus {
+    outline:none;
+}

@@ -9,7 +9,7 @@ export default class Socket extends Component {
         this.state = {
             input: '',
             message: [],
-            endpoint: "http://localhost:3013" // เชื่อมต่อไปยัง url ของ realtime server
+            endpoint: "http://localhost:3013"
         }
     }
 
