@@ -1,7 +1,9 @@
 import React, { Component } from 'react'
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import moment, { min } from "moment";
+import { post, get } from '../../server/connect'
 import moment_tz from 'moment-timezone'
+import swal from 'sweetalert'
 import { Row, Col, Input, Button, Label, FormGroup } from 'reactstrap';
 moment.tz.add({
     "zones": {
@@ -39,6 +41,7 @@ export default class Charge_locker extends Component {
             cal_coin: 0,
             check_duration: '',
             got_item: '',
+            coin_charge: 0
         }
     }
 
@@ -251,6 +254,7 @@ export default class Charge_locker extends Component {
 
         setTimeout(() => {
             this.cal_bill_coin()
+            this.add_to_database()
             this.push_data()
         }, 100);
     }
@@ -258,7 +262,7 @@ export default class Charge_locker extends Component {
         const got_item = this.state.got_item
         const cal_coin = this.state.cal_coin
         const coin = parseInt(this.state.coin)
-        let coin_charge = 0
+        let coin_charge = this.state.coin_charge
         let bill_1000 = 0
         let bill_500 = 0
         let bill_100 = 0
@@ -309,53 +313,96 @@ export default class Charge_locker extends Component {
 
         }
         else {
-            coin_charge = coin
-            this.setState({ coin_charge: coin_charge })
-            bill_1000 = (coin_charge / 1000)
-            this.setState({ bill_1000: bill_1000 | 0 })
+            if (coin) {
+                coin_charge = coin
+                this.setState({ got_item: "false" })
+                this.setState({ coin_charge: coin_charge })
+                bill_1000 = (coin_charge / 1000)
+                this.setState({ bill_1000: bill_1000 | 0 })
 
-            bill_1000 = (coin_charge % 1000)
-            bill_500 = bill_1000 / 500
-            this.setState({ bill_500: bill_500 | 0 })
+                bill_1000 = (coin_charge % 1000)
+                bill_500 = bill_1000 / 500
+                this.setState({ bill_500: bill_500 | 0 })
 
-            bill_500 = (bill_1000 % 500)
-            bill_100 = bill_500 / 100
-            this.setState({ bill_100: bill_100 | 0 })
+                bill_500 = (bill_1000 % 500)
+                bill_100 = bill_500 / 100
+                this.setState({ bill_100: bill_100 | 0 })
 
-            bill_100 = (bill_500 % 100)
-            bill_50 = bill_100 / 50
-            this.setState({ bill_50: bill_50 | 0 })
+                bill_100 = (bill_500 % 100)
+                bill_50 = bill_100 / 50
+                this.setState({ bill_50: bill_50 | 0 })
 
-            bill_50 = (bill_100 % 50)
-            bill_20 = bill_50 / 20
-            this.setState({ bill_20: bill_20 | 0 })
+                bill_50 = (bill_100 % 50)
+                bill_20 = bill_50 / 20
+                this.setState({ bill_20: bill_20 | 0 })
 
-            bill_20 = (bill_50 % 20)
-            coin_10 = bill_20 / 10
-            this.setState({ coin_10: coin_10 | 0 })
+                bill_20 = (bill_50 % 20)
+                coin_10 = bill_20 / 10
+                this.setState({ coin_10: coin_10 | 0 })
 
-            coin_10 = (bill_20 % 10)
-            coin_5 = coin_10 / 5
-            this.setState({ coin_5: coin_5 | 0 })
+                coin_10 = (bill_20 % 10)
+                coin_5 = coin_10 / 5
+                this.setState({ coin_5: coin_5 | 0 })
 
-            coin_5 = (coin_10 % 5)
-            coin_2 = coin_5 / 2
-            this.setState({ coin_2: coin_2 | 0 })
+                coin_5 = (coin_10 % 5)
+                coin_2 = coin_5 / 2
+                this.setState({ coin_2: coin_2 | 0 })
 
-            coin_2 = (coin_5 % 2)
-            coin_1 = coin_2 / 1
-            this.setState({ coin_1: coin_1 | 0 })
+                coin_2 = (coin_5 % 2)
+                coin_1 = coin_2 / 1
+                this.setState({ coin_1: coin_1 | 0 })
+            } else {
+                coin_charge = 0
+                this.setState({ got_item: "false" })
+                this.setState({ coin_charge: coin_charge })
+                bill_1000 = (coin_charge / 1000)
+                this.setState({ bill_1000: bill_1000 | 0 })
+
+                bill_1000 = (coin_charge % 1000)
+                bill_500 = bill_1000 / 500
+                this.setState({ bill_500: bill_500 | 0 })
+
+                bill_500 = (bill_1000 % 500)
+                bill_100 = bill_500 / 100
+                this.setState({ bill_100: bill_100 | 0 })
+
+                bill_100 = (bill_500 % 100)
+                bill_50 = bill_100 / 50
+                this.setState({ bill_50: bill_50 | 0 })
+
+                bill_50 = (bill_100 % 50)
+                bill_20 = bill_50 / 20
+                this.setState({ bill_20: bill_20 | 0 })
+
+                bill_20 = (bill_50 % 20)
+                coin_10 = bill_20 / 10
+                this.setState({ coin_10: coin_10 | 0 })
+
+                coin_10 = (bill_20 % 10)
+                coin_5 = coin_10 / 5
+                this.setState({ coin_5: coin_5 | 0 })
+
+                coin_5 = (coin_10 % 5)
+                coin_2 = coin_5 / 2
+                this.setState({ coin_2: coin_2 | 0 })
+
+                coin_2 = (coin_5 % 2)
+                coin_1 = coin_2 / 1
+                this.setState({ coin_1: coin_1 | 0 })
+            }
+
         }
 
     }
-    push_data() {
-        const data_locker = []
-        data_locker.push({
+    add_to_database = async () => {
+        const object = {
+            duration: this.state.duration,
+            coin: +this.state.coin,
             got_item: this.state.got_item,
             cal_coin: this.state.cal_coin,
             number_locker: this.state.number_locker,
             size: this.state.size,
-            coin_charge: this.state.coin_charge,
+            coin_charge: this.state.coin_charge != NaN ? this.state.coin_charge : 0,
             bill_1000: this.state.bill_1000,
             bill_500: this.state.bill_500,
             bill_100: this.state.bill_100,
@@ -365,7 +412,59 @@ export default class Charge_locker extends Component {
             coin_5: this.state.coin_5,
             coin_2: this.state.coin_2,
             coin_1: this.state.coin_1,
-            // active: this.state.active,
+        }
+        const cal_coin = this.state.cal_coin
+        try {
+            if (cal_coin <= object.coin) {
+                await post(object, "insert/add_locker").then((res) => {
+                    if (res.success) {
+                        swal({
+                            title: "Success !",
+                            text: "You confirm booking success !",
+                            icon: "success",
+                            button: "OK",
+                        }).then((button) => {
+                            if (button) {
+                                this.props.close()
+                            }
+                        })
+                    } else {
+                        alert(res.error_message);
+                    }
+                });
+            }
+            else {
+                swal({
+                    title: "Sorry",
+                    text: "You have too many expenses please insert data new again.",
+                    icon: "warning",
+                    button: "OK",
+                }).then((button) => {
+                    if (button) {
+                        this.props.close()
+                    }
+                })
+            }
+        } catch (error) {
+        }
+    }
+    push_data() {
+        const data_locker = []
+        data_locker.push({
+            got_item: this.state.got_item,
+            cal_coin: this.state.cal_coin,
+            number_locker: this.state.number_locker,
+            size: this.state.size,
+            coin_charge: this.state.coin_charge != NaN ? this.state.coin_charge : 0,
+            bill_1000: this.state.bill_1000,
+            bill_500: this.state.bill_500,
+            bill_100: this.state.bill_100,
+            bill_50: this.state.bill_50,
+            bill_20: this.state.bill_20,
+            coin_10: this.state.coin_10,
+            coin_5: this.state.coin_5,
+            coin_2: this.state.coin_2,
+            coin_1: this.state.coin_1,
             duration: +this.state.duration,
             coin: +this.state.coin
         })
@@ -379,30 +478,23 @@ export default class Charge_locker extends Component {
             cal_coin: 0,
         })
     }
+
+    check_data() {
+        swal("Please insert data !", "", "warning")
+    }
     render() {
         const {
             size,
             coin,
             duration,
-            cal_coin,
-            got_item,
             check_duration,
-            coin_charge,
-            bill_1000,
-            bill_500,
-            bill_100,
-            bill_50,
-            bill_20,
-            coin_10,
-            coin_5,
-            coin_2,
-            coin_1
+
         } = this.state
         const number_locker = parseInt(this.state.number_locker)
         return (
             <div className="margin-t">
                 <Row >
-                    <Col sm={12} md={{ size: 8, offset: 2 }}>
+                    <Col sm={12} >
                         <BootstrapTable data={data_table}  >
                             <TableHeaderColumn dataAlign="center" width='70' dataField='size' isKey></TableHeaderColumn>
                             <TableHeaderColumn dataAlign="center" dataField='first'>first 60 minutes</TableHeaderColumn>
@@ -413,24 +505,6 @@ export default class Charge_locker extends Component {
                 <div style={{ marginTop: 20, textAlign: 'center' }} >
                     you select locker &nbsp; <a style={{ color: 'blue' }}>{number_locker}</a> &nbsp; size &nbsp; <a style={{ color: 'blue' }}> {size} </a>
                 </div>
-                {/* {cal_coin ?
-                    <div style={{ marginTop: 20, textAlign: 'center' }} >
-                        you charge coin : <a style={{ color: 'blue' }}>{cal_coin}</a> THB &nbsp; || &nbsp;
-                        Got item back : <a style={{ color: 'blue' }}>{got_item}</a> <br />
-                        you charge coin : <a style={{ color: 'blue' }}>{coin_charge}</a> THB &nbsp; || &nbsp;
-                      <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
-                            {bill_1000 ? <div>bill 1000 x <a style={{ color: 'blue' }}>{bill_1000}</a>,&nbsp;</div> : null}
-                            {bill_500 ? <div>bill 500 x <a style={{ color: 'blue' }}>{bill_500}</a>,&nbsp;</div> : null}
-                            {bill_100 ? <div>bill 100 x <a style={{ color: 'blue' }}>{bill_100}</a>,&nbsp;</div> : null}
-                            {bill_50 ? <div>bill 50 x <a style={{ color: 'blue' }}>{bill_50}</a>,&nbsp;</div> : null}
-                            {bill_20 ? <div>bill 20 x <a style={{ color: 'blue' }}>{bill_20}</a>,&nbsp;</div> : null}
-                            {coin_10 ? <div>coin 10 x <a style={{ color: 'blue' }}>{coin_10}</a>,&nbsp;</div> : null}
-                            {coin_5 ? <div>coin 5 x <a style={{ color: 'blue' }}>{coin_5}</a>,&nbsp;</div> : null}
-                            {coin_2 ? <div>coin 2 x <a style={{ color: 'blue' }}>{coin_2}</a>&nbsp;</div> : null}
-                            {coin_1 ? <div>coin 1 x <a style={{ color: 'blue' }}>{coin_1}</a></div> : null}
-                        </div>
-                    </div>
-                    : null} */}
                 {check_duration ?
                     <div style={{ marginTop: 20, textAlign: 'center' }} >
                         <a style={{ color: 'red' }}>{check_duration}</a>
@@ -455,7 +529,7 @@ export default class Charge_locker extends Component {
                 </Row>
 
                 <Row style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center' }} className="margin-t">
-                    <Button color="success" style={{ marginRight: 10 }} onClick={() => this.calculate_coin()}>Confirm </Button>
+                    <Button color="success" style={{ marginRight: 10 }} onClick={this.state.duration && this.state.coin ? () => this.calculate_coin() : () => this.check_data()}>Confirm </Button>
                     <Button color="danger" style={{ marginLeft: 10 }} onClick={() => this.clear()}>Clear </Button>
                 </Row>
             </div >

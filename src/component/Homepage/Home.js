@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import Modal from 'react-responsive-modal'
-import { Row, Col, Table, Button } from 'reactstrap';
+import { Row, Col, Table, Button, Spinner, Collapse } from 'reactstrap';
 import Charge_locker from '../Modal/Charge_locker'
 import { post, get } from '../../server/connect'
 import socketIOClient from 'socket.io-client'
@@ -23,8 +23,9 @@ import {
 export default class Home extends Component {
     constructor(props) {
         super(props)
-
+        this.toggle = this.toggle.bind(this);
         this.state = {
+            collapse: false,
             open: false,
             locker_1: [],
             locker_2: [],
@@ -40,12 +41,18 @@ export default class Home extends Component {
             locker_12: [],
             data_locker: [],
             active: [],
+            number_locker: 0,
+            number_locker_new: 0,
             locker: 0,
             duration: 0,
             coin: 0,
             message: [],
             sent_socket: "http://localhost:3013"
         }
+    }
+
+    toggle() {
+        this.setState(state => ({ collapse: !state.collapse }))
     }
     componentDidMount() {
         this.set_number()
@@ -70,24 +77,24 @@ export default class Home extends Component {
         this.setState({
             number_locker: e
         });
-        let message = this.state.message
-        console.log("num", this.state.number_locker);
-        if (message.length < 1) {
-            this.onOpenModal()
-        } else {
-            message.map((ele) => {
-                if (ele.number_locker == this.state.number_locker) {
-                    swal("Busy lockers !", "Please use the new locker.", "error");
-                } else {
+        setTimeout(() => {
+            let number_locker_old = this.state.number_locker
+            let number_locker_new = this.state.number_locker_new
+            const message = this.state.message
+            // console.log("num", this.state.number_locker);
+            if (message.length < 1) {
+                this.onOpenModal()
+            } else {
+                if (number_locker_new != number_locker_old) {
                     this.onOpenModal()
-                }
-            })
-        }
-        console.log("ms", message);
-    }
-    // select_locker_false(){
+                } else {
+                    swal("Busy lockers !", "Please use the new locker.", "error");
 
-    // }
+                }
+            }
+        }, 100);
+    }
+
     onOpenModal = () => {
         this.setState({ open: true });
     };
@@ -95,8 +102,8 @@ export default class Home extends Component {
         this.setState({ open: false });
     };
     get_data_modal = (data_locker) => {
+        // console.log("data", data_locker);
         this.setState({ data_locker: data_locker })
-        this.onCloseModal()
         setTimeout(() => {
             this.send(data_locker)
             this.active_locker(data_locker)
@@ -114,7 +121,18 @@ export default class Home extends Component {
         socket.on('new-message', (messageNew) => {
             temp.push(...messageNew)
             this.setState({ message: temp })
+            setTimeout(() => {
+                this.set_new_locker()
+            }, 100);
         })
+    }
+
+    set_new_locker() {
+        let message = this.state.message
+        message.map((e) => {
+            this.setState({ number_locker_new: e.number_locker })
+        })
+
     }
     active_locker(data_locker) {
         data_locker.map((e) => {
@@ -127,35 +145,16 @@ export default class Home extends Component {
 
     }
 
-    submit = async () => {
-        const object = {
-            locker: this.state.locker,
-            duration: this.state.duration,
-            coin: this.state.coin
-        }
-        try {
-            if (object) {
-                await post(object, "insert/add_locker").then((res) => {
-                    if (res.success) {
-                        alert("success")
-                    } else {
-                        alert(res.error_message);
-                    }
-                });
-            }
-        } catch (error) {
-            // console.log(object);
-        }
-    }
-
     render() {
         const { open } = this.state;
-        const active = this.state.active
         return (
             <div >
-                <div className="margin-t">
+                <div className="font-h" >
+                    I GEAR GEEK: Coin Locker (コインロッカー)
+                </div>
+                <div className="margin-t" >
                     <Col sm={12} md={{ size: 4, offset: 4 }}>
-                        <Table bordered style={{ textAlign: "center" }}>
+                        <Table bordered style={{ textAlign: "center", marginBottom: 50 }}>
                             <thead>
                                 <tr className="cl-table">
                                     <th>S</th>
@@ -235,9 +234,7 @@ export default class Home extends Component {
                             </tbody>
                         </Table>
                     </Col>
-
                 </div>
-
 
                 {this.state.message.map((e) => {
                     return (
@@ -257,17 +254,62 @@ export default class Home extends Component {
                                 {e.coin_2 ? <div>coin 2 x <a style={{ color: 'blue' }}>{e.coin_2}</a>&nbsp;</div> : null}
                                 {e.coin_1 ? <div>coin 1 x <a style={{ color: 'blue' }}>{e.coin_1}</a></div> : null}
                             </div>
-                            {/* <div>active:{this.state.active}</div> */}
                         </div>
                     )
                 })}
 
                 <Modal open={open} onClose={this.onCloseModal} center>
-                    <Charge_locker number_locker={this.state.number_locker} get_data_modal={(data_locker) => this.get_data_modal(data_locker)} />
+                    <Charge_locker number_locker={this.state.number_locker} get_data_modal={(data_locker) => this.get_data_modal(data_locker)} close={() => this.onCloseModal()} />
                 </Modal>
-                <div style={{ marginTop: 20, display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
-                    <Button color="success" onClick={() => this.submit()}>จอง</Button>
-                </div>
+                {this.state.message.length > 0 ?
+                    <div style={{ marginTop: 30, textAlign: 'center', marginBottom: 50 }} >
+                        <Button color="primary" onClick={this.toggle}  >
+                            see more...
+                        </Button>
+                        <Collapse isOpen={this.state.collapse} style={{ marginTop: 30, marginBottom: 50 }}>
+                            <Col sm={12}>
+                                <Table bordered>
+                                    <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>Story</th>
+                                            <th>Unit selected</th>
+                                            <th>Duration of deposit (Minutes)</th>
+                                            <th>Insert</th>
+                                            <th>Charge</th>
+                                            <th>Charge</th>
+                                            <th>Got item back?</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {this.state.message.map((e, i) => {
+                                            return (
+                                                <tr>
+                                                    <th scope="row">{i + 1}</th>
+                                                    <td>User select unit of #{<a style={{ color: 'blue' }}>{e.number_locker}</a>} and insert <a style={{ color: 'blue' }}>{e.coin}</a> baht for charge</td>
+                                                    <td><a style={{ color: 'blue' }}>{e.number_locker}</a> </td>
+                                                    <td><a style={{ color: 'blue' }}>{e.duration}</a> </td>
+                                                    <td><a style={{ color: 'blue' }}>{e.coin}</a> </td>
+                                                    <td><a style={{ color: 'blue' }}>{e.coin_charge}</a> </td>
+                                                    <td> {e.bill_1000 ? <div> 1000 x <a style={{ color: 'blue' }}>{e.bill_1000}</a>,&nbsp;</div> : null}
+                                                        {e.bill_500 ? <div> 500 x <a style={{ color: 'blue' }}>{e.bill_500}</a>,&nbsp;</div> : null}
+                                                        {e.bill_100 ? <div> 100 x <a style={{ color: 'blue' }}>{e.bill_100}</a>,&nbsp;</div> : null}
+                                                        {e.bill_50 ? <div> 50 x <a style={{ color: 'blue' }}>{e.bill_50}</a>,&nbsp;</div> : null}
+                                                        {e.bill_20 ? <div> 20 x <a style={{ color: 'blue' }}>{e.bill_20}</a>,&nbsp;</div> : null}
+                                                        {e.coin_10 ? <div> 10 x <a style={{ color: 'blue' }}>{e.coin_10}</a>,&nbsp;</div> : null}
+                                                        {e.coin_5 ? <div> 5 x <a style={{ color: 'blue' }}>{e.coin_5}</a>,&nbsp;</div> : null}
+                                                        {e.coin_2 ? <div> 2 x <a style={{ color: 'blue' }}>{e.coin_2}</a>&nbsp;</div> : null}
+                                                        {e.coin_1 ? <div> 1 x <a style={{ color: 'blue' }}>{e.coin_1}</a></div> : null}</td>
+                                                    <td><a style={{ color: 'blue' }}>{e.got_item}</a></td>
+                                                </tr>
+                                            )
+                                        })}
+                                    </tbody>
+                                </Table>
+                            </Col>
+                        </Collapse>
+                    </div>
+                    : null}
             </div >
         )
     }

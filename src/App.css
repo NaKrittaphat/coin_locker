@@ -6,6 +6,12 @@
 .margin-t{
     margin-top: 50px;
 }
+.font-h{
+    margin-top: 50px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 25px
+}
 .btn-locker{
   width: 30px;
   border-radius: 15px;
